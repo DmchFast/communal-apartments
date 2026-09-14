@@ -16,3 +16,11 @@ def add_reading(readings: list[dict], meter_id: int, value: float) -> dict:
 
 def get_history(readings: list[dict], meter_id: int) -> list[dict]:
     return [r for r in readings if r["meter_id"] == meter_id]
+
+
+def calculate_consumption(readings: list[dict], meter_id: int) -> float | None:
+    #Вычесление расход (разность последнего и предыдущего показаний)
+    history = get_history(readings, meter_id)
+    if len(history) < 2:
+        return None
+    return history[-1]["value"] - history[-2]["value"]

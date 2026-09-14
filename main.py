@@ -2,6 +2,7 @@ from meters import add_meter, list_meters
 from storage import load_json, save_json
 from utils import input_float
 from readings import add_reading, get_history
+from readings import add_reading, get_history, calculate_consumption
 
 READINGS_FILE = "data/readings.json"
 METERS_FILE = "data/meters.json"
@@ -18,6 +19,23 @@ def show_menu() -> None:
     print("3. Внести показание")
     print("4. История показаний")
     print("0. Выход")
+
+
+def handle_show_consumption(meters: dict, readings: list[dict]) -> None:
+    list_meters(meters)
+    try:
+        meter_id = int(input("ID счётчика: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом.")
+        return
+    consumption = calculate_consumption(readings, meter_id)
+    if consumption is None:
+        print("Недостаточно данных (нужно минимум два показания).")
+        return
+    if consumption < 0:
+        print("Внимание: текущее показание меньше предыдущего.")
+        return
+    print(f"Расход: {consumption:.2f}")
 
 
 def handle_add_reading(meters: dict, readings: list[dict]) -> None:
@@ -51,6 +69,7 @@ def handle_show_history(meters: dict, readings: list[dict]) -> None:
     for r in history:
         print(f"{r['date']} {r['time']} — {r['value']}")
 
+
 def handle_add_meter(meters: dict) -> None:
     name = input("Название счётчика: ")
     unit = input("Единица измерения (кВт·ч, м³ и т.п.): ")
@@ -77,6 +96,8 @@ def main() -> None:
             handle_add_reading(meters, readings)
         elif choice == "4":
             handle_show_history(meters, readings)
+        elif choice == "5":
+            handle_show_consumption(meters, readings)
         elif choice == "0":
             print("До свидания!")
             break
