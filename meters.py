@@ -1,7 +1,7 @@
 def add_meter(meters: dict[int, dict], name: str, unit: str) -> int:
     #Добавление счётчика в словарь meters. с возвратом присвоенного ID
     meter_id = max(meters.keys(), default=0) + 1
-    meters[meter_id] = {"name": name, "unit": unit}
+    meters[meter_id] = {"name": name, "unit": unit, "tariff": 0.0}
     return meter_id
 
 

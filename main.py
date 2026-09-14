@@ -3,6 +3,7 @@ from storage import load_json, save_json
 from utils import input_float
 from readings import add_reading, get_history
 from readings import add_reading, get_history, calculate_consumption
+from tariffs import set_tariff, calculate_payment
 
 READINGS_FILE = "data/readings.json"
 METERS_FILE = "data/meters.json"
@@ -18,7 +19,45 @@ def show_menu() -> None:
     print("2. Добавить счётчик")
     print("3. Внести показание")
     print("4. История показаний")
+    print("5. Рассчитать расход")
+    print("6. Установить тариф")
+    print("7. Рассчитать платёж")
     print("0. Выход")
+
+
+def handle_set_tariff(meters: dict) -> None:
+    list_meters(meters)
+    try:
+        meter_id = int(input("ID счётчика: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом.")
+        return
+    if meter_id not in meters:
+        print("Счётчик не найден.")
+        return
+    tariff = input_float("Тариф (руб. за единицу): ")
+    set_tariff(meters, meter_id, tariff)
+    save_json(METERS_FILE, meters)
+    print("Тариф установлен.")
+
+
+def handle_show_payment(meters: dict, readings: list[dict]) -> None:
+    list_meters(meters)
+    try:
+        meter_id = int(input("ID счётчика: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом.")
+        return
+    consumption = calculate_consumption(readings, meter_id)
+    if consumption is None:
+        print("Недостаточно данных для расчёта.")
+        return
+    tariff = meters[meter_id].get("tariff", 0.0)
+    payment = calculate_payment(consumption, tariff)
+    print(
+        f"Расход: {consumption:.2f}, тариф: {tariff:.2f}, "
+        f"к оплате: {payment:.2f} руб."
+    )
 
 
 def handle_show_consumption(meters: dict, readings: list[dict]) -> None:
@@ -98,6 +137,10 @@ def main() -> None:
             handle_show_history(meters, readings)
         elif choice == "5":
             handle_show_consumption(meters, readings)
+        elif choice == "6":
+            handle_set_tariff(meters)
+        elif choice == "7":
+            handle_show_payment(meters, readings)
         elif choice == "0":
             print("До свидания!")
             break
