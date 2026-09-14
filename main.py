@@ -9,6 +9,11 @@ READINGS_FILE = "data/readings.json"
 METERS_FILE = "data/meters.json"
 
 
+def load_meters() -> dict[int, dict]:
+    stored_meters = load_json(METERS_FILE) or {}
+    return {int(meter_id): data for meter_id, data in stored_meters.items()}
+
+
 def get_user() -> str:
     return input("Введите имя пользователя: ")
 
@@ -123,7 +128,7 @@ def main() -> None:
     user = get_user()
     print(f"\nЗдравствуйте, {user}!")
 
-    meters = load_json(METERS_FILE) or {}
+    meters = load_meters()
     readings = load_json(READINGS_FILE) or []
 
     while True:
