@@ -3,7 +3,6 @@ import math
 from meters import add_meter, list_meters
 from storage import load_json, save_json
 from utils import input_float
-from readings import add_reading, get_history
 from readings import add_reading, get_history, calculate_consumption
 from tariffs import set_tariff, calculate_payment
 
@@ -14,6 +13,13 @@ METERS_FILE = "data/meters.json"
 def load_meters() -> dict[int, dict]:
     stored_meters = load_json(METERS_FILE) or {}
     return {int(meter_id): data for meter_id, data in stored_meters.items()}
+
+
+def load_readings() -> list[dict]:
+    stored_readings = load_json(READINGS_FILE) or []
+    for reading in stored_readings:
+        reading["meter_id"] = int(reading["meter_id"])
+    return stored_readings
 
 
 def get_user() -> str:
@@ -141,7 +147,7 @@ def main() -> None:
     print(f"\nЗдравствуйте, {user}!")
 
     meters = load_meters()
-    readings = load_json(READINGS_FILE) or []
+    readings = load_readings()
 
     while True:
         show_menu()
