@@ -1,3 +1,5 @@
+import math
+
 from meters import add_meter, list_meters
 from storage import load_json, save_json
 from utils import input_float
@@ -94,6 +96,13 @@ def handle_add_reading(meters: dict, readings: list[dict]) -> None:
         return
 
     value = input_float("Текущее показание: ")
+    if not math.isfinite(value) or value < 0:
+        print("Ошибка: показание должно быть неотрицательным числом.")
+        return
+    history = get_history(readings, meter_id)
+    if history and value < history[-1]["value"]:
+        print("Ошибка: новое показание не может быть меньше предыдущего.")
+        return
     add_reading(readings, meter_id, value)
     save_json(READINGS_FILE, readings)
     print("Показание сохранено.")
@@ -115,7 +124,10 @@ def handle_show_history(meters: dict, readings: list[dict]) -> None:
 
 
 def handle_add_meter(meters: dict) -> None:
-    name = input("Название счётчика: ")
+    name = input("Название счётчика: ").strip()
+    if not name:
+        print("Ошибка: название счётчика не может быть пустым.")
+        return
     unit = input("Единица измерения (кВт*ч, м^3 и т.п.): ").strip()
     if not unit:
         print("Ошибка: единица измерения не может быть пустой.")
