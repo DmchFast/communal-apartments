@@ -1,20 +1,43 @@
 from datetime import datetime
 
+def get_user():
+    name = input("Введите имя пользователя: ")
+    return name
+
+def get_meter_data():
+    name = input("Название счётчика: ")
+    try:
+        prev = float(input("Предыдущее показание: "))
+        curr = float(input("Текущее показание: "))
+    except ValueError:
+        print("Ошибка: показания должны быть числами.")
+        return None, None, None
+    return name, prev, curr
+
+
+def calculate_consumption(prev, curr):
+    if curr < prev:
+        return None
+    return curr - prev
+
 def main():
     print("=== Учёт показаний коммунальных счётчиков ===\n")
-
-    meter_name = input("Название счётчика: ")
-    previous = float(input("Предыдущее показание: "))
-    current = float(input("Текущее показание: "))
-
-    if current < previous:
+    
+    user = get_user()
+    
+    meter_name, previous, current = get_meter_data()
+    if meter_name is None:
+        return
+    
+    consumption = calculate_consumption(previous, current)
+    if consumption is None:
         print("Ошибка: текущее показание не может быть меньше предыдущего.")
         return
-
-    consumption = current - previous
+    
     today = datetime.now().date().strftime("%d.%m.%Y")
-
+    
     print("\n--- Результат ---")
+    print(f"Пользователь: {user}")
     print(f"Счётчик: {meter_name}")
     print(f"Предыдущее показание: {previous:.2f}")
     print(f"Текущее показание: {current:.2f}")
