@@ -111,7 +111,10 @@ def handle_show_history(meters: dict, readings: list[dict]) -> None:
 
 def handle_add_meter(meters: dict) -> None:
     name = input("Название счётчика: ")
-    unit = input("Единица измерения (кВт·ч, м³ и т.п.): ")
+    unit = input("Единица измерения (кВт*ч, м^3 и т.п.): ").strip()
+    if not unit:
+        print("Ошибка: единица измерения не может быть пустой.")
+        return
     add_meter(meters, name, unit)
     save_json(METERS_FILE, meters)
 
