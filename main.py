@@ -1,44 +1,47 @@
-from datetime import datetime
+from meters import add_meter, list_meters
+from storage import load_json, save_json
 from utils import input_float
 
-
-def get_user():
-    name = input("Введите имя пользователя: ")
-    return name
+METERS_FILE = "data/meters.json"
 
 
-def get_meter_data():
+def get_user() -> str:
+    return input("Введите имя пользователя: ")
+
+
+def show_menu() -> None:
+    print("\n=== Учёт показаний коммунальных счётчиков ===")
+    print("1. Показать счётчики")
+    print("2. Добавить счётчик")
+    print("0. Выход")
+
+
+def handle_add_meter(meters: dict) -> None:
     name = input("Название счётчика: ")
-    prev = input_float("Предыдущее показание: ")
-    curr = input_float("Текущее показание: ")
-    return name, prev, curr
+    unit = input("Единица измерения (кВт·ч, м³ и т.п.): ")
+    add_meter(meters, name, unit)
+    save_json(METERS_FILE, meters)
 
 
-def calculate_consumption(prev, curr):
-    if curr < prev:
-        return None
-    return curr - prev
-
-
-def main():
-    print("=== Учёт показаний коммунальных счётчиков ===\n")
+def main() -> None:
     user = get_user()
-    meter_name, previous, current = get_meter_data()
+    print(f"\nЗдравствуйте, {user}!")
 
-    consumption = calculate_consumption(previous, current)
-    if consumption is None:
-        print("Ошибка: текущее показание не может быть меньше предыдущего.")
-        return
+    meters = load_json(METERS_FILE) or {}
 
-    today = datetime.now().date().strftime("%d.%m.%Y")
+    while True:
+        show_menu()
+        choice = input("Выберите действие: ").strip()
 
-    print("\n--- Результат ---")
-    print(f"Пользователь: {user}")
-    print(f"Счётчик: {meter_name}")
-    print(f"Предыдущее показание: {previous:.2f}")
-    print(f"Текущее показание: {current:.2f}")
-    print(f"Расход: {consumption:.2f}")
-    print(f"Дата снятия: {today}")
+        if choice == "1":
+            list_meters(meters)
+        elif choice == "2":
+            handle_add_meter(meters)
+        elif choice == "0":
+            print("До свидания!")
+            break
+        else:
+            print("Неизвестная команда.")
 
 
 main()
