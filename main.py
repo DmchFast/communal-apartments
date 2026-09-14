@@ -1,7 +1,9 @@
 from meters import add_meter, list_meters
 from storage import load_json, save_json
 from utils import input_float
+from readings import add_reading, get_history
 
+READINGS_FILE = "data/readings.json"
 METERS_FILE = "data/meters.json"
 
 
@@ -13,8 +15,41 @@ def show_menu() -> None:
     print("\n=== Учёт показаний коммунальных счётчиков ===")
     print("1. Показать счётчики")
     print("2. Добавить счётчик")
+    print("3. Внести показание")
+    print("4. История показаний")
     print("0. Выход")
 
+
+def handle_add_reading(meters: dict, readings: list[dict]) -> None:
+    list_meters(meters)
+    try:
+        meter_id = int(input("ID счётчика: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом.")
+        return
+    if meter_id not in meters:
+        print("Счётчик с таким ID не найден.")
+        return
+
+    value = input_float("Текущее показание: ")
+    add_reading(readings, meter_id, value)
+    save_json(READINGS_FILE, readings)
+    print("Показание сохранено.")
+
+
+def handle_show_history(meters: dict, readings: list[dict]) -> None:
+    list_meters(meters)
+    try:
+        meter_id = int(input("ID счётчика: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом.")
+        return
+    history = get_history(readings, meter_id)
+    if not history:
+        print("Показаний по этому счётчику нет.")
+        return
+    for r in history:
+        print(f"{r['date']} {r['time']} — {r['value']}")
 
 def handle_add_meter(meters: dict) -> None:
     name = input("Название счётчика: ")
@@ -28,6 +63,7 @@ def main() -> None:
     print(f"\nЗдравствуйте, {user}!")
 
     meters = load_json(METERS_FILE) or {}
+    readings = load_json(READINGS_FILE) or []
 
     while True:
         show_menu()
@@ -37,6 +73,10 @@ def main() -> None:
             list_meters(meters)
         elif choice == "2":
             handle_add_meter(meters)
+        elif choice == "3":
+            handle_add_reading(meters, readings)
+        elif choice == "4":
+            handle_show_history(meters, readings)
         elif choice == "0":
             print("До свидания!")
             break
