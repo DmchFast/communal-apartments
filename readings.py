@@ -17,6 +17,19 @@ def add_reading(
     return record
 
 
+def delete_reading(
+    readings: list[dict[str, Any]], meter_id: int, index: int
+) -> bool:
+    '''Удаление показания по индексу в счётчике.'''
+    history = get_history(readings, meter_id)
+    if index < 0 or index >= len(history):
+        return False
+
+    target = history[index]
+    readings.remove(target)
+    return True
+
+
 def get_history(
     readings: list[dict[str, Any]], meter_id: int
 ) -> list[dict[str, Any]]:
