@@ -1,24 +1,9 @@
 import math
 from meters import add_meter, list_meters
-from storage import load_json, save_json
+from storage import load_user_meters, save_user_meters, load_user_readings, save_user_readings
 from utils import input_float
 from readings import add_reading, get_history, calculate_consumption
 from tariffs import set_tariff, calculate_payment
-
-READINGS_FILE = "data/readings.json"
-METERS_FILE = "data/meters.json"
-
-
-def load_meters() -> dict[int, dict]:
-    stored_meters = load_json(METERS_FILE) or {}
-    return {int(meter_id): data for meter_id, data in stored_meters.items()}
-
-
-def load_readings() -> list[dict]:
-    stored_readings = load_json(READINGS_FILE) or []
-    for reading in stored_readings:
-        reading["meter_id"] = int(reading["meter_id"])
-    return stored_readings
 
 
 def get_user() -> str:
@@ -54,7 +39,6 @@ def handle_set_tariff(meters: dict) -> None:
 
     if not tariff_input:
         meters[meter_id]["tariff"] = None
-        save_json(METERS_FILE, meters)
         print("Тариф сброшен (не установлен).")
         return
 
@@ -69,7 +53,6 @@ def handle_set_tariff(meters: dict) -> None:
         return
 
     set_tariff(meters, meter_id, tariff)
-    save_json(METERS_FILE, meters)
     print("Тариф установлен.")
 
 
@@ -131,7 +114,6 @@ def handle_add_reading(meters: dict, readings: list[dict]) -> None:
         print("Ошибка: новое показание не может быть меньше предыдущего.")
         return
     add_reading(readings, meter_id, value)
-    save_json(READINGS_FILE, readings)
     print("Показание сохранено.")
 
 
@@ -147,7 +129,7 @@ def handle_show_history(meters: dict, readings: list[dict]) -> None:
         print("Показаний по этому счётчику нет.")
         return
     for r in history:
-        print(f"{r['date']} {r['time']} — {r['value']}")
+        print(f"{r['date']} {r['time']} - {r['value']}")
 
 
 def handle_add_meter(meters: dict) -> None:
@@ -160,15 +142,14 @@ def handle_add_meter(meters: dict) -> None:
         print("Ошибка: единица измерения не может быть пустой.")
         return
     add_meter(meters, name, unit)
-    save_json(METERS_FILE, meters)
 
 
 def main() -> None:
     user = get_user()
     print(f"\nЗдравствуйте, {user}!\n")
 
-    meters = load_meters()
-    readings = load_readings()
+    meters = load_user_meters(user)
+    readings = load_user_readings(user)
 
     while True:
         show_menu()
@@ -178,14 +159,17 @@ def main() -> None:
             list_meters(meters)
         elif choice == "2":
             handle_add_meter(meters)
+            save_user_meters(user, meters)
         elif choice == "3":
             handle_add_reading(meters, readings)
+            save_user_readings(user, readings)
         elif choice == "4":
             handle_show_history(meters, readings)
         elif choice == "5":
             handle_show_consumption(meters, readings)
         elif choice == "6":
             handle_set_tariff(meters)
+            save_user_meters(user, meters)
         elif choice == "7":
             handle_show_payment(meters, readings)
         elif choice == "0":
