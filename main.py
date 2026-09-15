@@ -1,7 +1,7 @@
 import math
 from typing import Any
 
-from meters import add_meter, list_meters
+from meters import add_meter, list_meters, delete_meter
 from storage import (
     load_user_meters,
     save_user_meters,
@@ -9,7 +9,7 @@ from storage import (
     save_user_readings,
 )
 from utils import input_float
-from readings import add_reading, get_history, calculate_consumption
+from readings import add_reading, get_history, calculate_consumption, delete_reading
 from tariffs import set_tariff, calculate_payment
 
 
@@ -26,6 +26,8 @@ def show_menu() -> None:
     print("5. Рассчитать расход")
     print("6. Установить тариф")
     print("7. Рассчитать платёж")
+    print("8. Удалить счётчик")
+    print("9. Удалить показание")
     print("0. Выход")
 
 
@@ -130,6 +132,36 @@ def handle_add_reading(
     print("Показание сохранено.")
 
 
+def handle_delete_reading(
+    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+) -> None:
+    list_meters(meters)
+    try:
+        meter_id = int(input("ID счётчика: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом.")
+        return
+
+    history = get_history(readings, meter_id)
+    if not history:
+        print("Показаний по этому счётчику нет.")
+        return
+
+    for i, r in enumerate(history, start=1):
+        print(f"  {i}. {r['date']} {r['time']} - {r['value']}")
+
+    try:
+        index = int(input("Номер показания для удаления: "))
+    except ValueError:
+        print("Ошибка: номер должен быть числом.")
+        return
+
+    if delete_reading(readings, meter_id, index - 1):
+        print("Показание удалено.")
+    else:
+        print("Показание с таким номером не найдено.")
+
+
 def handle_show_history(
     meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
 ) -> None:
@@ -143,8 +175,8 @@ def handle_show_history(
     if not history:
         print("Показаний по этому счётчику нет.")
         return
-    for r in history:
-        print(f"{r['date']} {r['time']} - {r['value']}")
+    for i, r in enumerate(history, start=1):
+        print(f"  {i}. {r['date']} {r['time']} - {r['value']}")
 
 
 def handle_add_meter(meters: dict[int, dict[str, Any]]) -> None:
@@ -157,6 +189,34 @@ def handle_add_meter(meters: dict[int, dict[str, Any]]) -> None:
         print("Ошибка: единица измерения не может быть пустой.")
         return
     add_meter(meters, name, unit)
+
+
+def handle_delete_meter(
+    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+) -> None:
+    list_meters(meters)
+    try:
+        meter_id = int(input("ID счётчика для удаления: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом.")
+        return
+
+    if meter_id not in meters:
+        print("Счётчик с таким ID не найден.")
+        return
+
+    confirm = input(
+        f"Удалить счётчик '{meters[meter_id]['name']}' "
+        f"и все его показания? (y/n): "
+    ).strip().lower()
+    if confirm != "y":
+        print("Удаление отменено.")
+        return
+
+    delete_meter(meters, meter_id)
+    # Удаление всех показаний счётчика
+    readings[:] = [r for r in readings if r["meter_id"] != meter_id]
+    print("Счётчик и все его показания удалены.")
 
 
 def main() -> None:
@@ -187,6 +247,13 @@ def main() -> None:
             save_user_meters(user, meters)
         elif choice == "7":
             handle_show_payment(meters, readings)
+        elif choice == "8":
+            handle_delete_meter(meters, readings)
+            save_user_meters(user, meters)
+            save_user_readings(user, readings)
+        elif choice == "9":
+            handle_delete_reading(meters, readings)
+            save_user_readings(user, readings)
         elif choice == "0":
             print("До свидания!")
             break
