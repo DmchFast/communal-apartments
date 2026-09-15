@@ -148,3 +148,7 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+# Users data
+data/*
+!data/.gitkeep
