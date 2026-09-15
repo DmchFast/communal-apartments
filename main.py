@@ -48,7 +48,18 @@ def handle_set_tariff(meters: dict) -> None:
     if meter_id not in meters:
         print("Счётчик не найден.")
         return
-    tariff = input_float("Тариф (руб. за единицу): ")
+
+    tariff_input = input("Тариф (руб. за единицу) [оставьте пустым, чтобы не устанавливать]: ").strip()
+    if not tariff_input:
+        print("Тариф не установлен.")
+        return
+
+    try:
+        tariff = float(tariff_input)
+    except ValueError:
+        print("Ошибка: тариф должен быть числом.")
+        return
+
     set_tariff(meters, meter_id, tariff)
     save_json(METERS_FILE, meters)
     print("Тариф установлен.")
