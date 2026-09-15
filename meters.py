@@ -8,6 +8,14 @@ def add_meter(meters: dict[int, dict[str, Any]], name: str, unit: str) -> int:
     return meter_id
 
 
+def delete_meter(meters: dict[int, dict[str, Any]], meter_id: int) -> bool:
+    '''Удаление счётчика по ID, True -> счётчик был удалён.'''
+    if meter_id in meters:
+        del meters[meter_id]
+        return True
+    return False
+
+
 def list_meters(meters: dict[int, dict[str, Any]]) -> None:
     '''Вывод списка счётчиков.'''
     if not meters:
