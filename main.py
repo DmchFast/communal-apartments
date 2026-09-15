@@ -1,6 +1,13 @@
 import math
+from typing import Any
+
 from meters import add_meter, list_meters
-from storage import load_user_meters, save_user_meters, load_user_readings, save_user_readings
+from storage import (
+    load_user_meters,
+    save_user_meters,
+    load_user_readings,
+    save_user_readings,
+)
 from utils import input_float
 from readings import add_reading, get_history, calculate_consumption
 from tariffs import set_tariff, calculate_payment
@@ -22,7 +29,7 @@ def show_menu() -> None:
     print("0. Выход")
 
 
-def handle_set_tariff(meters: dict) -> None:
+def handle_set_tariff(meters: dict[int, dict[str, Any]]) -> None:
     list_meters(meters)
     try:
         meter_id = int(input("ID счётчика: "))
@@ -56,7 +63,9 @@ def handle_set_tariff(meters: dict) -> None:
     print("Тариф установлен.")
 
 
-def handle_show_payment(meters: dict, readings: list[dict]) -> None:
+def handle_show_payment(
+    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+) -> None:
     list_meters(meters)
     try:
         meter_id = int(input("ID счётчика: "))
@@ -77,7 +86,9 @@ def handle_show_payment(meters: dict, readings: list[dict]) -> None:
     print(f"К оплате: {payment:.2f} руб.")
 
 
-def handle_show_consumption(meters: dict, readings: list[dict]) -> None:
+def handle_show_consumption(
+    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+) -> None:
     list_meters(meters)
     try:
         meter_id = int(input("ID счётчика: "))
@@ -94,7 +105,9 @@ def handle_show_consumption(meters: dict, readings: list[dict]) -> None:
     print(f"Расход: {consumption:.2f}")
 
 
-def handle_add_reading(meters: dict, readings: list[dict]) -> None:
+def handle_add_reading(
+    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+) -> None:
     list_meters(meters)
     try:
         meter_id = int(input("ID счётчика: "))
@@ -117,7 +130,9 @@ def handle_add_reading(meters: dict, readings: list[dict]) -> None:
     print("Показание сохранено.")
 
 
-def handle_show_history(meters: dict, readings: list[dict]) -> None:
+def handle_show_history(
+    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+) -> None:
     list_meters(meters)
     try:
         meter_id = int(input("ID счётчика: "))
@@ -132,7 +147,7 @@ def handle_show_history(meters: dict, readings: list[dict]) -> None:
         print(f"{r['date']} {r['time']} - {r['value']}")
 
 
-def handle_add_meter(meters: dict) -> None:
+def handle_add_meter(meters: dict[int, dict[str, Any]]) -> None:
     name = input("Название счётчика: ").strip()
     if not name:
         print("Ошибка: название счётчика не может быть пустым.")

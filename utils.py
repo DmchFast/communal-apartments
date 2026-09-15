@@ -1,7 +1,3 @@
-# utils.py
-from datetime import datetime
-
-
 def input_float(prompt: str) -> float:
     while True:
         try:

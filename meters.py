@@ -1,16 +1,23 @@
-def add_meter(meters: dict[int, dict], name: str, unit: str) -> int:
-    #Добавление счётчика в словарь meters. с возвратом присвоенного ID
+from typing import Any
+
+
+def add_meter(meters: dict[int, dict[str, Any]], name: str, unit: str) -> int:
+    # Добавление счётчика в словарь meters с возвратом присвоенного ID.
     meter_id = max(meters.keys(), default=0) + 1
     meters[meter_id] = {"name": name, "unit": unit, "tariff": None}
     return meter_id
 
 
-def list_meters(meters: dict[int, dict]) -> None:
-    #Вывод список счётчиков
+def list_meters(meters: dict[int, dict[str, Any]]) -> None:
+    # Вывод списка счётчиков.
     if not meters:
         print("Счётчиков пока нет.")
         return
     for meter_id, data in meters.items():
         tariff = data.get("tariff")
-        tariff_str = f", тариф: {tariff:.2f} руб." if tariff is not None else ", тариф не установлен"
+        tariff_str = (
+            f", тариф: {tariff:.2f} руб."
+            if tariff is not None
+            else ", тариф не установлен"
+        )
         print(f"[{meter_id}] {data['name']} ({data['unit']}){tariff_str}")
