@@ -5,7 +5,7 @@ from typing import Any
 def add_reading(
     readings: list[dict[str, Any]], meter_id: int, value: float
 ) -> dict[str, Any]:
-    # Показания с текущей датой и временем.
+    '''Показания с текущей датой и временем.'''
     now = datetime.now()
     record = {
         "meter_id": meter_id,
@@ -26,7 +26,7 @@ def get_history(
 def calculate_consumption(
     readings: list[dict[str, Any]], meter_id: int
 ) -> float | None:
-    # Вычисление расхода между последними показаниями.
+    '''Вычисление расхода между последними показаниями.'''
     history = get_history(readings, meter_id)
     if len(history) < 2:
         return None

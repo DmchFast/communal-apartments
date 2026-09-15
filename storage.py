@@ -8,7 +8,7 @@ READINGS_FILE = "data/readings.json"
 
 
 def load_json(filename: str) -> Any:
-    # Загрузка данных из JSON-файла.
+    '''Загрузка данных из JSON-файла.'''
     try:
         with open(filename, "r", encoding="utf-8") as f:
             return json.load(f)
