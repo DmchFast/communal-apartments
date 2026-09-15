@@ -1,4 +1,4 @@
-from meters import add_meter, list_meters
+from meters import add_meter, list_meters, delete_meter
 
 
 def test_add_meter_assigns_sequential_ids(empty_meters: dict) -> None:
@@ -39,3 +39,18 @@ def test_list_meters_shows_no_meters_message(capsys) -> None:
     captured = capsys.readouterr()
 
     assert "Счётчиков пока нет." in captured.out
+
+
+def test_delete_meter_removes_existing(empty_meters: dict) -> None:
+    """Проверяет удаление существующего счётчика."""
+    meter_id = add_meter(empty_meters, "Вода", "м^3")
+
+    result = delete_meter(empty_meters, meter_id)
+
+    assert result is True
+    assert meter_id not in empty_meters
+
+
+def test_delete_meter_returns_false_for_unknown(empty_meters: dict) -> None:
+    """Проверяет, что удаление неизвестного счётчика возвращает False."""
+    assert delete_meter(empty_meters, 999) is False
