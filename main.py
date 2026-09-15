@@ -1,5 +1,4 @@
 import math
-
 from meters import add_meter, list_meters
 from storage import load_json, save_json
 from utils import input_float
@@ -27,7 +26,7 @@ def get_user() -> str:
 
 
 def show_menu() -> None:
-    print("\n=== Учёт показаний коммунальных счётчиков ===")
+    print("=== Учёт показаний коммунальных счётчиков ===")
     print("1. Показать счётчики")
     print("2. Добавить счётчик")
     print("3. Внести показание")
@@ -49,15 +48,24 @@ def handle_set_tariff(meters: dict) -> None:
         print("Счётчик не найден.")
         return
 
-    tariff_input = input("Тариф (руб. за единицу) [оставьте пустым, чтобы не устанавливать]: ").strip()
+    tariff_input = input(
+        "Тариф (руб. за единицу) [пусто или пробел - сброс тарифа]: "
+    ).strip()
+
     if not tariff_input:
-        print("Тариф не установлен.")
+        meters[meter_id]["tariff"] = None
+        save_json(METERS_FILE, meters)
+        print("Тариф сброшен (не установлен).")
         return
 
     try:
         tariff = float(tariff_input)
     except ValueError:
         print("Ошибка: тариф должен быть числом.")
+        return
+
+    if tariff < 0:
+        print("Ошибка: тариф не может быть отрицательным.")
         return
 
     set_tariff(meters, meter_id, tariff)
@@ -74,14 +82,16 @@ def handle_show_payment(meters: dict, readings: list[dict]) -> None:
         return
     consumption = calculate_consumption(readings, meter_id)
     if consumption is None:
-        print("Недостаточно данных для расчёта.")
+        print("Недостаточно данных для расчёта (нужно минимум два показания).")
         return
-    tariff = meters[meter_id].get("tariff", 0.0)
+
+    tariff = meters[meter_id].get("tariff")
+    if tariff is None:
+        print("Тариф не установлен. Установите тариф через пункт 6.")
+        return
+
     payment = calculate_payment(consumption, tariff)
-    print(
-        f"Расход: {consumption:.2f}, тариф: {tariff:.2f}, "
-        f"к оплате: {payment:.2f} руб."
-    )
+    print(f"К оплате: {payment:.2f} руб.")
 
 
 def handle_show_consumption(meters: dict, readings: list[dict]) -> None:
@@ -155,7 +165,7 @@ def handle_add_meter(meters: dict) -> None:
 
 def main() -> None:
     user = get_user()
-    print(f"\nЗдравствуйте, {user}!")
+    print(f"\nЗдравствуйте, {user}!\n")
 
     meters = load_meters()
     readings = load_readings()
@@ -163,7 +173,7 @@ def main() -> None:
     while True:
         show_menu()
         choice = input("Выберите действие: ").strip()
-
+        print("================================")
         if choice == "1":
             list_meters(meters)
         elif choice == "2":
