@@ -8,7 +8,7 @@ from models.readings import (
     delete_reading,
     Reading,
 )
-from models.tariffs import set_tariff, calculate_payment
+from models.tariffs import calculate_payment
 from models.users import User
 from storage import (
     load_user_meters,
@@ -226,40 +226,41 @@ def handle_delete_meter(
 
 
 def main() -> None:
-    user = get_user()
-    print(f"\nЗдравствуйте, {user}!\n")
+    username = get_user()
+    print(f"\nЗдравствуйте, {username}!\n")
 
-    meters = load_user_meters(user)
-    readings = load_user_readings(user)
+    user = User(username)
+    user.meters = load_user_meters(username)
+    user.readings = load_user_readings(username)
 
     while True:
         show_menu()
         choice = input("Выберите действие: ").strip()
         print("================================")
         if choice == "1":
-            list_meters(meters)
+            list_meters(user.meters)
         elif choice == "2":
-            handle_add_meter(meters)
-            save_user_meters(user, meters)
+            handle_add_meter(user.meters)
+            save_user_meters(user.name, user.meters)
         elif choice == "3":
-            handle_add_reading(meters, readings)
-            save_user_readings(user, readings)
+            handle_add_reading(user.meters, user.readings)
+            save_user_readings(user.name, user.readings)
         elif choice == "4":
-            handle_show_history(meters, readings)
+            handle_show_history(user.meters, user.readings)
         elif choice == "5":
-            handle_show_consumption(meters, readings)
+            handle_show_consumption(user.meters, user.readings)
         elif choice == "6":
-            handle_set_tariff(meters)
-            save_user_meters(user, meters)
+            handle_set_tariff(user.meters)
+            save_user_meters(user.name, user.meters)
         elif choice == "7":
-            handle_show_payment(meters, readings)
+            handle_show_payment(user.meters, user.readings)
         elif choice == "8":
-            handle_delete_meter(meters, readings)
-            save_user_meters(user, meters)
-            save_user_readings(user, readings)
+            handle_delete_meter(user.meters, user.readings)
+            save_user_meters(user.name, user.meters)
+            save_user_readings(user.name, user.readings)
         elif choice == "9":
-            handle_delete_reading(meters, readings)
-            save_user_readings(user, readings)
+            handle_delete_reading(user.meters, user.readings)
+            save_user_readings(user.name, user.readings)
         elif choice == "0":
             print("До свидания!")
             break
