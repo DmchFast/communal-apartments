@@ -1,7 +1,15 @@
 import math
-from typing import Any
 
-from meters import add_meter, list_meters, delete_meter
+from models.meters import add_meter, list_meters, delete_meter, Meter
+from models.readings import (
+    add_reading,
+    get_history,
+    calculate_consumption,
+    delete_reading,
+    Reading,
+)
+from models.tariffs import set_tariff, calculate_payment
+from models.users import User
 from storage import (
     load_user_meters,
     save_user_meters,
@@ -9,8 +17,6 @@ from storage import (
     save_user_readings,
 )
 from utils import input_float
-from readings import add_reading, get_history, calculate_consumption, delete_reading
-from tariffs import set_tariff, calculate_payment
 
 
 def get_user() -> str:
@@ -31,14 +37,15 @@ def show_menu() -> None:
     print("0. Выход")
 
 
-def handle_set_tariff(meters: dict[int, dict[str, Any]]) -> None:
+def handle_set_tariff(meters: list[Meter]) -> None:
     list_meters(meters)
     try:
         meter_id = int(input("ID счётчика: "))
     except ValueError:
         print("Ошибка: ID должен быть числом.")
         return
-    if meter_id not in meters:
+    meter = next((m for m in meters if m.id == meter_id), None)
+    if meter is None:
         print("Счётчик не найден.")
         return
 
@@ -47,7 +54,7 @@ def handle_set_tariff(meters: dict[int, dict[str, Any]]) -> None:
     ).strip()
 
     if not tariff_input:
-        meters[meter_id]["tariff"] = None
+        meter.set_tariff(None)
         print("Тариф сброшен (не установлен).")
         return
 
@@ -61,12 +68,12 @@ def handle_set_tariff(meters: dict[int, dict[str, Any]]) -> None:
         print("Ошибка: тариф не может быть отрицательным.")
         return
 
-    set_tariff(meters, meter_id, tariff)
+    meter.set_tariff(tariff)
     print("Тариф установлен.")
 
 
 def handle_show_payment(
-    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+    meters: list[Meter], readings: list[Reading]
 ) -> None:
     list_meters(meters)
     try:
@@ -79,17 +86,17 @@ def handle_show_payment(
         print("Недостаточно данных для расчёта (нужно минимум два показания).")
         return
 
-    tariff = meters[meter_id].get("tariff")
-    if tariff is None:
+    meter = next((m for m in meters if m.id == meter_id), None)
+    if meter is None or meter.tariff is None:
         print("Тариф не установлен. Установите тариф через пункт 6.")
         return
 
-    payment = calculate_payment(consumption, tariff)
+    payment = calculate_payment(consumption, meter.tariff)
     print(f"К оплате: {payment:.2f} руб.")
 
 
 def handle_show_consumption(
-    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+    meters: list[Meter], readings: list[Reading]
 ) -> None:
     list_meters(meters)
     try:
@@ -108,7 +115,7 @@ def handle_show_consumption(
 
 
 def handle_add_reading(
-    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+    meters: list[Meter], readings: list[Reading]
 ) -> None:
     list_meters(meters)
     try:
@@ -116,7 +123,7 @@ def handle_add_reading(
     except ValueError:
         print("Ошибка: ID должен быть числом.")
         return
-    if meter_id not in meters:
+    if not any(m.id == meter_id for m in meters):
         print("Счётчик с таким ID не найден.")
         return
 
@@ -125,7 +132,7 @@ def handle_add_reading(
         print("Ошибка: показание должно быть неотрицательным числом.")
         return
     history = get_history(readings, meter_id)
-    if history and value < history[-1]["value"]:
+    if history and value < history[-1].value:
         print("Ошибка: новое показание не может быть меньше предыдущего.")
         return
     add_reading(readings, meter_id, value)
@@ -133,7 +140,7 @@ def handle_add_reading(
 
 
 def handle_delete_reading(
-    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+    meters: list[Meter], readings: list[Reading]
 ) -> None:
     list_meters(meters)
     try:
@@ -148,7 +155,7 @@ def handle_delete_reading(
         return
 
     for i, r in enumerate(history, start=1):
-        print(f"  {i}. {r['date']} {r['time']} - {r['value']}")
+        print(f"  {i}. {r}")
 
     try:
         index = int(input("Номер показания для удаления: "))
@@ -163,7 +170,7 @@ def handle_delete_reading(
 
 
 def handle_show_history(
-    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+    meters: list[Meter], readings: list[Reading]
 ) -> None:
     list_meters(meters)
     try:
@@ -176,10 +183,10 @@ def handle_show_history(
         print("Показаний по этому счётчику нет.")
         return
     for i, r in enumerate(history, start=1):
-        print(f"  {i}. {r['date']} {r['time']} - {r['value']}")
+        print(f"  {i}. {r}")
 
 
-def handle_add_meter(meters: dict[int, dict[str, Any]]) -> None:
+def handle_add_meter(meters: list[Meter]) -> None:
     name = input("Название счётчика: ").strip()
     if not name:
         print("Ошибка: название счётчика не может быть пустым.")
@@ -192,7 +199,7 @@ def handle_add_meter(meters: dict[int, dict[str, Any]]) -> None:
 
 
 def handle_delete_meter(
-    meters: dict[int, dict[str, Any]], readings: list[dict[str, Any]]
+    meters: list[Meter], readings: list[Reading]
 ) -> None:
     list_meters(meters)
     try:
@@ -201,21 +208,20 @@ def handle_delete_meter(
         print("Ошибка: ID должен быть числом.")
         return
 
-    if meter_id not in meters:
+    meter = next((m for m in meters if m.id == meter_id), None)
+    if meter is None:
         print("Счётчик с таким ID не найден.")
         return
 
     confirm = input(
-        f"Удалить счётчик '{meters[meter_id]['name']}' "
-        f"и все его показания? (y/n): "
+        f"Удалить счётчик '{meter.name}' и все его показания? (y/n): "
     ).strip().lower()
     if confirm != "y":
         print("Удаление отменено.")
         return
 
     delete_meter(meters, meter_id)
-    # Удаление всех показаний счётчика
-    readings[:] = [r for r in readings if r["meter_id"] != meter_id]
+    readings[:] = [r for r in readings if r.meter_id != meter_id]
     print("Счётчик и все его показания удалены.")
 
 
@@ -261,4 +267,5 @@ def main() -> None:
             print("Неизвестная команда.")
 
 
-main()
+if __name__ == "__main__":
+    main()
