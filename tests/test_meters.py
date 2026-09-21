@@ -1,56 +1,42 @@
-from meters import add_meter, list_meters, delete_meter
+from models.meters import add_meter, list_meters, delete_meter
 
 
-def test_add_meter_assigns_sequential_ids(empty_meters: dict) -> None:
-    """Проверяет, что add_meter присваивает последовательные ID."""
-    id1 = add_meter(empty_meters, "Вода", "м^3")
-    id2 = add_meter(empty_meters, "Электричество", "кВт*ч")
-
-    assert id1 == 1
-    assert id2 == 2
+def test_add_meter_assigns_sequential_ids(empty_meters: list) -> None:
+    meter1 = add_meter(empty_meters, "Вода", "м^3")
+    meter2 = add_meter(empty_meters, "Электричество", "кВт*ч")
+    assert meter1.id == 1
+    assert meter2.id == 2
     assert len(empty_meters) == 2
 
 
-def test_add_meter_stores_correct_data(empty_meters: dict) -> None:
-    """Проверяет, что данные счётчика сохраняются корректно."""
-    meter_id = add_meter(empty_meters, "Газ", "м^3")
-    meter = empty_meters[meter_id]
-
-    assert meter["name"] == "Газ"
-    assert meter["unit"] == "м^3"
-    assert meter["tariff"] is None
+def test_add_meter_stores_correct_data(empty_meters: list) -> None:
+    meter = add_meter(empty_meters, "Газ", "м^3")
+    assert meter.name == "Газ"
+    assert meter.unit == "м^3"
+    assert meter.tariff is None
 
 
-def test_list_meters_outputs_all_meters(capsys, empty_meters: dict) -> None:
-    """Проверяет, что list_meters выводит все счётчики."""
+def test_list_meters_outputs_all_meters(capsys, empty_meters: list) -> None:
     add_meter(empty_meters, "Вода", "м^3")
     add_meter(empty_meters, "Газ", "м^3")
-
     list_meters(empty_meters)
     captured = capsys.readouterr()
-
     assert "[1] Вода (м^3)" in captured.out
     assert "[2] Газ (м^3)" in captured.out
 
 
 def test_list_meters_shows_no_meters_message(capsys) -> None:
-    """Проверяет сообщение при пустом словаре счётчиков."""
-    list_meters({})
+    list_meters([])
     captured = capsys.readouterr()
-
     assert "Счётчиков пока нет." in captured.out
 
 
-def test_delete_meter_removes_existing(empty_meters: dict) -> None:
-    """Проверяет удаление существующего счётчика."""
-    meter_id = add_meter(empty_meters, "Вода", "м^3")
-
-    result = delete_meter(empty_meters, meter_id)
-
+def test_delete_meter_removes_existing(empty_meters: list) -> None:
+    meter = add_meter(empty_meters, "Вода", "м^3")
+    result = delete_meter(empty_meters, meter.id)
     assert result is True
-    assert meter_id not in empty_meters
+    assert len(empty_meters) == 0
 
 
-def test_delete_meter_returns_false_for_unknown(empty_meters: dict) -> None:
-    """Проверяет, что удаление неизвестного счётчика возвращает False."""
+def test_delete_meter_returns_false_for_unknown(empty_meters: list) -> None:
     assert delete_meter(empty_meters, 999) is False
