@@ -4,11 +4,10 @@ from models.meters import add_meter, list_meters, delete_meter, Meter
 from models.readings import (
     add_reading,
     get_history,
-    calculate_consumption,
     delete_reading,
     Reading,
 )
-from models.tariffs import calculate_payment
+from models.payments import create_payment
 from models.users import User
 from storage import (
     load_user_meters,
@@ -81,18 +80,25 @@ def handle_show_payment(
     except ValueError:
         print("Ошибка: ID должен быть числом.")
         return
-    consumption = calculate_consumption(readings, meter_id)
-    if consumption is None:
+
+    try:
+        payment = create_payment(readings, meter_id)
+    except ValueError as error:
+        print(f"Ошибка расчёта: {error}")
+        return
+    if payment is None:
         print("Недостаточно данных для расчёта (нужно минимум два показания).")
         return
 
-    meter = next((m for m in meters if m.id == meter_id), None)
-    if meter is None or meter.tariff is None:
+    if payment.tariff is None:
         print("Тариф не установлен. Установите тариф через пункт 6.")
         return
 
-    payment = calculate_payment(consumption, meter.tariff)
-    print(f"К оплате: {payment:.2f} руб.")
+    if payment.amount is None:
+        print("Не удалось рассчитать платёж.")
+        return
+
+    print(f"К оплате: {payment.amount:.2f} руб.")
 
 
 def handle_show_consumption(
@@ -104,14 +110,25 @@ def handle_show_consumption(
     except ValueError:
         print("Ошибка: ID должен быть числом.")
         return
-    consumption = calculate_consumption(readings, meter_id)
-    if consumption is None:
+
+    try:
+        payment = create_payment(readings, meter_id)
+    except ValueError as error:
+        print(f"Ошибка расчёта: {error}")
+        return
+    if payment is None:
         print("Недостаточно данных (нужно минимум два показания).")
         return
-    if consumption < 0:
+
+    if payment.consumption is None:
+        print("Недостаточно данных для расчёта расхода.")
+        return
+
+    if payment.consumption < 0:
         print("Внимание: текущее показание меньше предыдущего.")
         return
-    print(f"Расход: {consumption:.2f}")
+
+    print(f"Расход: {payment.consumption:.2f}")
 
 
 def handle_add_reading(
@@ -123,7 +140,8 @@ def handle_add_reading(
     except ValueError:
         print("Ошибка: ID должен быть числом.")
         return
-    if not any(m.id == meter_id for m in meters):
+    meter = next((m for m in meters if m.id == meter_id), None)
+    if meter is None:
         print("Счётчик с таким ID не найден.")
         return
 
@@ -135,7 +153,7 @@ def handle_add_reading(
     if history and value < history[-1].value:
         print("Ошибка: новое показание не может быть меньше предыдущего.")
         return
-    add_reading(readings, meter_id, value)
+    add_reading(readings, meter_id, value, meter)
     print("Показание сохранено.")
 
 
@@ -231,7 +249,7 @@ def main() -> None:
 
     user = User(username)
     user.meters = load_user_meters(username)
-    user.readings = load_user_readings(username)
+    user.readings = load_user_readings(username, user.meters)
 
     while True:
         show_menu()

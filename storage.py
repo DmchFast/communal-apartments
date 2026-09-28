@@ -42,11 +42,27 @@ def save_user_meters(username: str, meters: list[Meter]) -> None:
     save_json(METERS_FILE, all_data)
 
 
-def load_user_readings(username: str) -> list[Reading]:
+def load_user_readings(
+    username: str,
+    meters: list[Meter] | None = None,
+) -> list[Reading]:
     """Загрузить показания пользователя как объекты Reading."""
     all_data = load_json(READINGS_FILE) or {}
     user_readings = all_data.get(username, [])
-    return [Reading.from_data(item) for item in user_readings]
+    readings = [Reading.from_data(item) for item in user_readings]
+
+    if meters is not None:
+        meters_by_id = {m.id: m for m in meters}
+        for reading in readings:
+            meter = meters_by_id.get(reading.meter_id)
+            if meter is None:
+                raise ValueError(
+                    f"Счётчик с ID {reading.meter_id} не найден"
+                )
+            reading.meter = meter
+            reading.meter_id = meter.id
+
+    return readings
 
 
 def save_user_readings(username: str, readings: list[Reading]) -> None:
