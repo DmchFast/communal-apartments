@@ -68,3 +68,19 @@ def test_load_user_readings_converts_meter_id_to_int(
     )
     loaded = load_user_readings("test_user")
     assert loaded[0].meter_id == 1
+
+
+def test_load_user_readings_attaches_meter_object(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        "storage.READINGS_FILE", str(tmp_path / "readings.json")
+    )
+    meters = [Meter(1, "Вода", "м^3", 20.0)]
+    readings = [Reading(meters[0], 100.0)]
+    save_user_readings("test_user", readings)
+
+    loaded = load_user_readings("test_user", meters)
+
+    assert loaded[0].meter is meters[0]
+    assert loaded[0].meter.name == "Вода"
