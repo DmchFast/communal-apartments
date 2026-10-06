@@ -28,6 +28,19 @@ def page(title: str, content: str) -> str:
 </html>"""
 
 
+def page_not_found(request, exception):
+    """Страница 404. Вызывается Django автоматически при DEBUG = False."""
+    content = """
+    <h1 class="text-danger">404 — страница не найдена</h1>
+    <p>Проверьте адрес или вернитесь на главную.</p>
+    <a href="/" class="btn btn-primary">На главную</a>
+    """
+    return HttpResponse(
+        page("404 — страница не найдена", content),
+        status=404,
+    )
+
+
 def index(request):
     content = """
     <h1 class="display-4">Коммунальные показания</h1>
