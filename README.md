@@ -1,9 +1,11 @@
 # communal-apartments 🏢
 
- **Сервис учёта коммунальных показаний** — консольное приложение на Python с объектной моделью предметной области.
+ **Сервис учёта коммунальных показаний** — приложение на Python с объектной моделью предметной области. Веб-интерфейс на Django.
 
 [![Python](https://img.shields.io/badge/3.10+-3776AB?style=for-the-badge&logo=python&logoColor=FFD43B&label=Python&labelColor=303030)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/5.2-0c4b33?style=for-the-badge&logo=django&logoColor=12714d&label=Django&labelColor=303030)](https://www.djangoproject.com/)
 [![JSON](https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white&label=JSON&labelColor=303030)](https://www.json.org/)
+[![Bootstrap](https://img.shields.io/badge/5.3-7e1ff7?style=for-the-badge&logo=bootstrap&logoColor=7e1ff7&label=Bootstrap&labelColor=303030)](https://getbootstrap.com/)
 [![Pytest](https://img.shields.io/badge/9.1.1-0A9EDC?style=for-the-badge&logo=pytest&logoColor=0A9EDC&label=Pytest&labelColor=303030)](https://pytest.org/)
 [![Flake8](https://img.shields.io/badge/7.3.0-3B78B3?style=for-the-badge&logo=python&logoColor=3B78B3&label=Flake8&labelColor=303030)](https://flake8.pycqa.org/)
 
@@ -149,25 +151,87 @@ Payment  (главная сущность)
 
 ---
 
+## Веб-интерфейс на Django
+
+  Проект имеет две версии:
+
+- **консольная**;
+- **веб-версия**.
+
+Консольная версия сохранена и продолжает работать: классы пакета `models/`, функции `storage.py`, тесты `pytest` не изменены.
+
+### Страницы веб-интерфейса
+
+| URL | Назначение | View-функция |
+|---|---|---|
+| `/` | Главная: описание сервиса и навигация | `homepage.views.index` |
+| `/meters/` | Список счётчиков | `meters.views.meters` |
+| `/meters/<int:meter_id>/` | Карточка счётчика: характеристики, тариф, история показаний, рассчитанный платёж | `meters.views.meter_detail` |
+| `/payments/` | Список платежей по всем счётчикам | `payments.views.payments` |
+| `/payments/<int:meter_id>/` | Детальная страница платежа | `payments.views.payment_detail` |
+| `/admin/` | Стандартная админка Django | `django.contrib.admin` |
+
+Если счётчик с указанным `meter_id` не найден — возвращается страница с сообщением об ошибке и кодом **404**.
+
+### Django-приложения
+
+- **`homepage`** — главная страница и функция `page()` (единый HTML-каркас с Bootstrap).
+- **`meters`** — страницы счётчиков и их показаний.
+- **`payments`** — страницы платежей.
+
+На данный момент Django предоставляет встроенную модель `User` в `django.contrib.auth`. Авторизация и разделение пользователей будут реализованы позже.
+
+### Данные и переходный период
+
+Django-представления **читают те же JSON-файлы**, что и консольное приложение (`data/meters.json`, `data/readings.json`), через функции `storage.py` и классы пакета `models/`.
+
+Так как авторизация ещё не реализована, веб-интерфейс показывает **данные всех пользователей** одновременно. Это временное решение, которое будет исправлено переходом на Django ORM и разделением данных по пользователям в будущем.
+
+### Оформление
+
+Все страницы используют единый HTML-каркас (функция `page()` в `homepage/views.py`):
+
+- подключается **Bootstrap 5.3** через CDN;
+- используется адаптивная вёрстка (`viewport` + класс `container`);
+- навигация между разделами вынесена в `<nav>` в шапке страницы;
+- карточки счётчиков и платежей оформлены классами `card`, `list-group`, `badge`, `btn`.
+
+---
+
 ## Структура проекта
 
 ```
 communal-apartments/
-├── main.py              # точка входа, меню и обработчики
-├── storage.py           # сохранение/загрузка JSON ↔ объекты
-├── utils.py             # вспомогательные функции ввода
-├── models/              # пакет классов предметной области
+├── config/                  # настройки Django-проекта
 │   ├── __init__.py
-│   ├── meters.py        # класс Meter + функции работы со счётчиками
-│   ├── readings.py      # класс Reading + функции работы с показаниями
-│   ├── payments.py      # класс Payment (главная сущность) + расчёт платежа
-│   ├── tariffs.py       # установка тарифа и вспомогательный расчёт
-│   └── users.py         # класс User
-├── data/                # JSON-файлы данных
+│   ├── settings.py
+│   ├── urls.py              # корневая маршрутизация
+│   ├── asgi.py
+│   └── wsgi.py
+├── homepage/                # Django-приложение: главная страница
+│   ├── urls.py              # url маршрутизация
+│   ├── views.py             # page() + index()
+│   └── ...                  # admin.py, apps.py, models.py, tests.py (сгенерированы Django)
+├── meters/                  # Django-приложение: счётчики
+│   ├── urls.py              # url маршрутизация
+│   ├── views.py             # meters(), meter_detail()
+│   └── ...                  # admin.py, apps.py, models.py, tests.py (сгенерированы Django)
+├── payments/                # Django-приложение: платежи
+│   ├── urls.py              # url маршрутизация
+│   ├── views.py             # payments(), payment_detail()
+│   └── ...                  # admin.py, apps.py, models.py, tests.py (сгенерированы Django)
+├── models/                  # пакет классов предметной области (консоль)
+│   ├── __init__.py
+│   ├── meters.py            # класс Meter + функции работы со счётчиками
+│   ├── readings.py          # класс Reading + функции работы с показаниями
+│   ├── payments.py          # класс Payment (главная сущность) + расчёт платежа
+│   ├── tariffs.py           # установка тарифа и вспомогательный расчёт
+│   └── users.py             # класс User
+├── data/                    # JSON-файлы данных
 │   ├── .gitkeep
 │   ├── meters.json
 │   └── readings.json
-├── tests/               # автоматизированные тесты pytest
+├── tests/                   # автоматизированные тесты pytest (консоль)
 │   ├── conftest.py
 │   ├── test_meters.py
 │   ├── test_readings.py
@@ -175,9 +239,13 @@ communal-apartments/
 │   ├── test_tariffs.py
 │   ├── test_payments.py
 │   └── test_utils.py
-├── .flake8              # конфигурация линтера
-├── pytest.ini           # конфигурация тестов
-├── requirements.txt     # зависимости
+├── manage.py                # точка входа Django
+├── main.py                  # консольная версия
+├── storage.py               # сохранение/загрузка JSON ↔ объекты
+├── utils.py                 # вспомогательные функции ввода
+├── .flake8                  # конфигурация линтера
+├── pytest.ini               # конфигурация тестов
+├── requirements.txt         # зависимости
 └── README.md
 ```
 
@@ -185,11 +253,11 @@ communal-apartments/
 
 ## Формат хранения данных
 
- Данные хранятся в JSON в каталоге `data/`. Для каждого пользователя используются отдельные записи.
+Данные хранятся в JSON в каталоге `data/`. Для каждого пользователя используются отдельные записи.
 
- ### Пример записи счётчика
+### Пример записи счётчика
 
- Файл `data/meters.json`:
+Файл `data/meters.json`:
 
 ```
 {
@@ -203,9 +271,9 @@ communal-apartments/
 }
 ```
 
- ### Пример записи показания
+### Пример записи показания
 
- Файл `data/readings.json`:
+Файл `data/readings.json`:
 
 ```
 {
@@ -220,11 +288,11 @@ communal-apartments/
 }
 ```
 
- При загрузке JSON преобразуется в объекты `Meter` и `Reading`.
- Показания привязываются к соответствующим объектам `Meter`
- по `meter_id`.
+При загрузке JSON преобразуется в объекты `Meter` и `Reading`.
+Показания привязываются к соответствующим объектам `Meter`
+по `meter_id`.
 
- При сохранении объекты преобразуются обратно в JSON.
+При сохранении объекты преобразуются обратно в JSON.
 
 ---
 
@@ -274,10 +342,10 @@ communal-apartments/
 
 На следующих этапах планируется:
 
-- Расширение функциональности
-- Создание веб-приложения на Django с базовой структурой
+- Перенос сущностей `Meter`, `Reading`, `Payment` в **Django ORM**
 - Подключение базы данных
-- Создание форм для ввода и редактирования данных
+- Переход на **Django-шаблоны** (`templates/`) и отказ от функции `page()`
+- Формы для создания и редактирования счётчиков и показаний
 - Реализация пользователей, регистрации и аутентификации
 - Разработка REST API
 - Docker
@@ -286,6 +354,8 @@ communal-apartments/
 ---
 
 ## Запуск
+
+### Консольная версия
 
 ```
 # Переход в папку проекта
@@ -301,11 +371,38 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
+### Веб-версия на Django
+
+```
+# Переход в папку проекта
+cd communal-apartments
+
+# Активация виртуального окружения
+.venv\Scripts\activate
+
+# Установка зависимостей
+python -m pip install -r requirements.txt
+
+# Применить встроенные миграции Django (один раз)
+python manage.py migrate
+
+# Запустить development-сервер
+python manage.py runserver
+```
+
+После запуска открыть в браузере:
+
+- http://127.0.0.1:8000/ — главная страница
+- http://127.0.0.1:8000/meters/ — список счётчиков
+- http://127.0.0.1:8000/meters/1/ — карточка счётчика
+- http://127.0.0.1:8000/payments/ — список платежей
+- http://127.0.0.1:8000/admin/ — админ-панель Django
+
 ---
 
 ## Проверка проекта
 
-Запуск тестов:
+### Запуск тестов
 
 ```bash
 pytest -v
@@ -324,9 +421,7 @@ pytest -v
 - обработку исключений;
 - работу вспомогательных функций ввода.
 
----
-
-Проверка стиля кода:
+### Проверка стиля кода
 
 ```bash
 flake8 .
