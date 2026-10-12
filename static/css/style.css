@@ -1,0 +1,200 @@
+body {
+    background-color: #f4f6f9;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1f2937;
+}
+
+
+.navbar {
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 0.75rem 2rem;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: #111827 !important;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: #6b7280 !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #111827 !important;
+    background-color: #f3f4f6;
+}
+
+
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+    background-color: #ffffff;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.75em;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    border: 1px solid transparent;
+}
+
+
+.badge.bg-primary {
+    background-color: #e0e7ff !important;
+    color: #4338ca !important;
+    border-color: #c7d2fe;
+}
+
+
+.badge.bg-success {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+    border-color: #86efac;
+}
+
+
+.badge.bg-warning {
+    background-color: #ffedd5 !important;
+    color: #9a3412 !important;
+    border-color: #fed7aa;
+}
+
+
+.badge.bg-danger {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fecaca;
+}
+
+
+.progress {
+    height: 10px;
+    border-radius: 6px;
+    background-color: #e5e7eb;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 6px;
+    transition: width 0.6s ease;
+}
+
+
+.progress-bar.bg-purple { background-color: #8b5cf6; }
+.progress-bar.bg-blue   { background-color: #3b82f6; }
+.progress-bar.bg-green  { background-color: #22c55e; }
+.progress-bar.bg-orange { background-color: #f97316; }
+
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 1rem 0;
+    background-color: transparent;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+
+.dashboard-card {
+    border-radius: 20px;
+    color: #ffffff;
+    padding: 1.75rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 160px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+}
+
+.dashboard-card h5 {
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+}
+
+.dashboard-card p {
+    opacity: 0.9;
+    font-size: 0.875rem;
+    margin: 0;
+    color: #ffffff;
+}
+
+
+.dashboard-card.bg-purple  { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.dashboard-card.bg-orange  { background: linear-gradient(135deg, #f97316, #ea580c); }
+.dashboard-card.bg-teal    { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+.dashboard-card.bg-green   { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.dashboard-card.bg-red     { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.dashboard-card.bg-blue    { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+.summary-card {
+    border-left: 4px solid #3b82f6;
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    height: 100%;
+}
+
+.summary-card h3 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+    color: #111827;
+}
+
+.summary-card p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.summary-card.border-blue   { border-left-color: #3b82f6; }
+.summary-card.border-green  { border-left-color: #22c55e; }
+.summary-card.border-orange { border-left-color: #f97316; }
+.summary-card.border-purple { border-left-color: #8b5cf6; }
+.summary-card.border-red    { border-left-color: #ef4444; }
+
+
+.text-muted {
+    color: #6b7280 !important;
+}
+
+h1, h2, h3, h4, h5 {
+    color: #111827;
+}
