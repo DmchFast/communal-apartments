@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Счётчики — Коммуналка{% endblock %}
+
+{% block content %}
+<h1>Счётчики</h1>
+<p class="text-muted">Всего счётчиков: {{ meters|length }}</p>
+
+{% if meters %}
+    <ul class="list-group">
+        {% for meter in meters %}
+            <li class="list-group-item">
+                <a href="{% url 'meters:meter_detail' meter.id %}">
+                    [{{ meter.id }}] {{ meter.name|default:"Без названия" }}
+                </a>
+                ({{ meter.unit }})
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">Счётчиков пока нет.</p>
+{% endif %}
+{% endblock %}
