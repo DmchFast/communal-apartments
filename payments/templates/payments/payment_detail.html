@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if meter %}Платёж — {{ meter.name }}{% else %}Счётчик не найден{% endif %} — Коммуналка
+{% endblock %}
+
+{% block content %}
+{% if meter %}
+    {% if payment %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Платёж по счётчику «{{ meter.name }}»</h5>
+                <p class="card-text"><strong>Расход:</strong>
+                    {% if payment.consumption %}
+                        {{ payment.consumption|floatformat:2 }} {{ meter.unit }}
+                    {% else %}—{% endif %}
+                </p>
+                <p class="card-text"><strong>Тариф:</strong>
+                    {% if payment.tariff %}
+                        {{ payment.tariff|floatformat:2 }} руб.
+                    {% else %}не установлен{% endif %}
+                </p>
+                <p class="card-text"><strong>К оплате:</strong>
+                    {% if payment.amount %}
+                        {{ payment.amount|floatformat:2 }} руб.
+                    {% else %}—{% endif %}
+                </p>
+                <a href="{% url 'payments:payments' %}" class="btn btn-outline-secondary">← к списку платежей</a>
+            </div>
+        </div>
+    {% else %}
+        <h1 class="text-danger">Недостаточно данных</h1>
+        <p>Для расчёта платежа по счётчику «{{ meter.name }}» нужно минимум два показания.</p>
+        <a href="{% url 'payments:payments' %}" class="btn btn-outline-secondary">← к списку платежей</a>
+    {% endif %}
+{% else %}
+    <h1 class="text-danger">Счётчик не найден</h1>
+    <a href="{% url 'payments:payments' %}" class="btn btn-outline-secondary">← к списку платежей</a>
+{% endif %}
+{% endblock %}
