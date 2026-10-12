@@ -3,7 +3,14 @@
 {% block title %}404 — Коммуналка{% endblock %}
 
 {% block content %}
-<h1 class="text-danger">404 — страница не найдена</h1>
-<p>Проверьте адрес или вернитесь на главную.</p>
-<a href="{% url 'homepage:index' %}" class="btn btn-primary">На главную</a>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="text-center">
+        <div class="display-1 fw-bold text-danger mb-3">404</div>
+        <h1 class="h3 mb-3">Страница не найдена</h1>
+        <p class="text-muted mb-4">Проверьте адрес или вернитесь на главную.</p>
+        <a href="{% url 'homepage:index' %}" class="btn btn-danger">
+            На главную
+        </a>
+    </div>
+</div>
 {% endblock %}

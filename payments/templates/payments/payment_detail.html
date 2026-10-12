@@ -6,35 +6,80 @@
 
 {% block content %}
 {% if meter %}
+    <div class="mb-4">
+        <a href="{% url 'payments:payments' %}" class="back-link">
+            <span>←</span> К списку платежей
+        </a>
+        <h1 class="fw-bold mt-2">Платёж по счётчику «{{ meter.name }}»</h1>
+        <p class="text-muted">ID {{ meter.id }} · {{ meter.unit }}</p>
+    </div>
+
     {% if payment %}
-        <div class="card">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="summary-card border-blue">
+                    <p>Расход</p>
+                    <h3>
+                        {% if payment.consumption %}
+                            {{ payment.consumption|floatformat:2 }} {{ meter.unit }}
+                        {% else %}—{% endif %}
+                    </h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card border-purple">
+                    <p>Тариф</p>
+                    <h3>
+                        {% if payment.tariff %}
+                            {{ payment.tariff|floatformat:2 }} ₽
+                        {% else %}—{% endif %}
+                    </h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card border-orange">
+                    <p>К оплате</p>
+                    <h3>
+                        {% if payment.amount %}
+                            {{ payment.amount|floatformat:2 }} ₽
+                        {% else %}—{% endif %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
             <div class="card-body">
-                <h5 class="card-title">Платёж по счётчику «{{ meter.name }}»</h5>
-                <p class="card-text"><strong>Расход:</strong>
-                    {% if payment.consumption %}
-                        {{ payment.consumption|floatformat:2 }} {{ meter.unit }}
-                    {% else %}—{% endif %}
+                <p class="mb-0 text-muted">
+                    Расчёт выполнен по последним двум показаниям счётчика.
+                    {% if not payment.tariff %}
+                        Тариф не установлен — сумма к оплате не рассчитана.
+                    {% endif %}
                 </p>
-                <p class="card-text"><strong>Тариф:</strong>
-                    {% if payment.tariff %}
-                        {{ payment.tariff|floatformat:2 }} руб.
-                    {% else %}не установлен{% endif %}
-                </p>
-                <p class="card-text"><strong>К оплате:</strong>
-                    {% if payment.amount %}
-                        {{ payment.amount|floatformat:2 }} руб.
-                    {% else %}—{% endif %}
-                </p>
-                <a href="{% url 'payments:payments' %}" class="btn btn-outline-secondary">← к списку платежей</a>
             </div>
         </div>
     {% else %}
-        <h1 class="text-danger">Недостаточно данных</h1>
-        <p>Для расчёта платежа по счётчику «{{ meter.name }}» нужно минимум два показания.</p>
-        <a href="{% url 'payments:payments' %}" class="btn btn-outline-secondary">← к списку платежей</a>
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="fs-1 mb-3">📉</div>
+                <h5 class="text-danger">Недостаточно данных</h5>
+                <p class="text-muted">Для расчёта платежа по счётчику «{{ meter.name }}» нужно минимум два показания.</p>
+                <a href="{% url 'payments:payments' %}" class="btn btn-outline-secondary">
+                    ← к списку платежей
+                </a>
+            </div>
+        </div>
     {% endif %}
 {% else %}
-    <h1 class="text-danger">Счётчик не найден</h1>
-    <a href="{% url 'payments:payments' %}" class="btn btn-outline-secondary">← к списку платежей</a>
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="fs-1 mb-3">🚫</div>
+            <h1 class="text-danger h3">Счётчик не найден</h1>
+            <p class="text-muted">Прибор учёта с указанным ID отсутствует.</p>
+            <a href="{% url 'payments:payments' %}" class="back-link">
+                <span>←</span> К списку платежей
+            </a>
+        </div>
+    </div>
 {% endif %}
 {% endblock %}
