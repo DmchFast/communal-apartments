@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from models.meters import Meter
-from storage import METERS_FILE, load_json
+from models.readings import Reading, get_history
+from models.payments import create_payment
+from storage import METERS_FILE, READINGS_FILE, load_json
+
 
 def _all_meters():
     """Загрузить счётчики всех пользователей."""
@@ -11,7 +14,9 @@ def _all_meters():
             result.append(Meter.from_data(int(meter_id), data))
     return result
 
+
 def _all_readings(meters):
+    """Загрузить все показания и привязать к переданным Meter."""
     all_data = load_json(READINGS_FILE) or {}
     meters_by_id = {m.id: m for m in meters}
     result = []
@@ -25,9 +30,11 @@ def _all_readings(meters):
                 result.append(reading)
     return result
 
+
 def meters(request):
     meters_list = _all_meters()
     return render(request, "meters/meter_list.html", {"meters": meters_list})
+
 
 def meter_detail(request, meter_id):
     meters_list = _all_meters()
