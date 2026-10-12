@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if meter %}{{ meter.name }}{% else %}Счётчик не найден{% endif %} — Коммуналка
+{% endblock %}
+
+{% block content %}
+{% if meter %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ meter.name }}</h5>
+            <p class="card-text"><strong>ID:</strong> {{ meter.id }}</p>
+            <p class="card-text"><strong>Единица измерения:</strong> {{ meter.unit }}</p>
+            <p class="card-text">
+                <strong>Тариф:</strong>
+                {% if meter.tariff %}
+                    {{ meter.tariff|floatformat:2 }} руб.
+                {% else %}
+                    не установлен
+                {% endif %}
+            </p>
+            <p class="card-text">
+                <strong>Платёж:</strong>
+                {% if payment %}
+                    {% if payment.amount %}
+                        {{ payment.amount|floatformat:2 }} руб.
+                    {% else %}
+                        тариф не установлен
+                    {% endif %}
+                {% else %}
+                    недостаточно данных
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <h3>История показаний</h3>
+    {% if history %}
+        <ul class="list-group">
+            {% for reading in history %}
+                <li class="list-group-item">{{ reading }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Показаний нет</p>
+    {% endif %}
+
+    <a href="{% url 'meters:meters' %}" class="btn btn-outline-secondary mt-3">
+        ← к списку счётчиков
+    </a>
+{% else %}
+    <h1 class="text-danger">Счётчик не найден</h1>
+    <a href="{% url 'meters:meters' %}" class="btn btn-outline-secondary">
+        ← к списку счётчиков
+    </a>
+{% endif %}
+{% endblock %}
