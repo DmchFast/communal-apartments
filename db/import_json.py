@@ -4,12 +4,14 @@ from db.database import get_connection
 METERS_FILE = "data/meters.json"
 READINGS_FILE = "data/readings.json"
 
+
 def load_json(filename):
     try:
         with open(filename, encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
+
 
 def import_users_and_meters(conn):
     meters_data = load_json(METERS_FILE) or {}
@@ -41,6 +43,7 @@ def import_users_and_meters(conn):
     )
     return meter_id
 
+
 def import_readings(conn):
     readings_data = load_json(READINGS_FILE) or {}
     readings = []
@@ -62,6 +65,7 @@ def import_readings(conn):
         readings,
     )
 
+
 def main():
     conn = get_connection()
     try:
@@ -78,6 +82,7 @@ def main():
         raise
     finally:
         conn.close()
+
 
 if __name__ == "__main__":
     main()

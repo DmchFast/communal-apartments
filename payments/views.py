@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from db.database import get_connection
 
+
 def payments(request):
     conn = get_connection()
     meters = conn.execute("""
@@ -43,6 +44,7 @@ def payments(request):
     conn.close()
     return render(request, "payments/payment_list.html", {"items": items})
 
+
 def payment_detail(request, meter_id):
     conn = get_connection()
     meter = conn.execute("""
@@ -53,7 +55,9 @@ def payment_detail(request, meter_id):
 
     if meter is None:
         conn.close()
-        return render(request, "payments/payment_detail.html", {"meter": None}, status=404)
+        return render(
+            request, "payments/payment_detail.html", {"meter": None}, status=404
+        )
 
     readings = conn.execute("""
         SELECT value, date, time

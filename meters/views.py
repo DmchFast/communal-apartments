@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from db.database import get_connection
 
+
 def meters(request):
     conn = get_connection()
     rows = conn.execute("""
@@ -12,6 +13,7 @@ def meters(request):
     """).fetchall()
     conn.close()
     return render(request, "meters/meter_list.html", {"meters": rows})
+
 
 def meter_detail(request, meter_id):
     conn = get_connection()
