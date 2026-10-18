@@ -1,54 +1,58 @@
 from django.shortcuts import render
-from models.meters import Meter
-from models.readings import Reading, get_history
-from models.payments import create_payment
-from storage import METERS_FILE, READINGS_FILE, load_json
-
-
-def _all_meters():
-    """Загрузить счётчики всех пользователей."""
-    all_data = load_json(METERS_FILE) or {}
-    result = []
-    for user_meters in all_data.values():
-        for meter_id, data in user_meters.items():
-            result.append(Meter.from_data(int(meter_id), data))
-    return result
-
-
-def _all_readings(meters):
-    """Загрузить все показания и привязать к переданным Meter."""
-    all_data = load_json(READINGS_FILE) or {}
-    meters_by_id = {m.id: m for m in meters}
-    result = []
-    for user_readings in all_data.values():
-        for item in user_readings:
-            reading = Reading.from_data(item)
-            meter = meters_by_id.get(reading.meter_id)
-            if meter is not None:
-                reading.meter = meter
-                reading.meter_id = meter.id
-                result.append(reading)
-    return result
-
+from db.database import get_connection
 
 def meters(request):
-    meters_list = _all_meters()
-    return render(request, "meters/meter_list.html", {"meters": meters_list})
-
+    conn = get_connection()
+    rows = conn.execute("""
+        SELECT meters.id, meters.name, meters.unit, meters.tariff,
+               users.name AS user_name
+        FROM meters
+        JOIN users ON meters.user_id = users.id
+        ORDER BY users.name, meters.name
+    """).fetchall()
+    conn.close()
+    return render(request, "meters/meter_list.html", {"meters": rows})
 
 def meter_detail(request, meter_id):
-    meters_list = _all_meters()
-    meter = next((m for m in meters_list if m.id == meter_id), None)
+    conn = get_connection()
+    meter = conn.execute("""
+        SELECT meters.id, meters.name, meters.unit, meters.tariff,
+               users.name AS user_name
+        FROM meters
+        JOIN users ON meters.user_id = users.id
+        WHERE meters.id = ?
+    """, (meter_id,)).fetchone()
+
     if meter is None:
+        conn.close()
         return render(request, "meters/meter_detail.html", {"meter": None}, status=404)
 
-    readings_list = _all_readings(meters_list)
-    history = get_history(readings_list, meter_id)
-    payment = create_payment(readings_list, meter_id)
+    history = conn.execute("""
+        SELECT id, value, date, time
+        FROM readings
+        WHERE meter_id = ?
+        ORDER BY date, time
+    """, (meter_id,)).fetchall()
 
-    context = {
+    # Расчёт расхода и платежа по последним двум показаниям
+    payment = None
+    if len(history) >= 2:
+        prev = history[-2]
+        curr = history[-1]
+        consumption = curr["value"] - prev["value"]
+        if consumption >= 0:
+            amount = None
+            if meter["tariff"] is not None:
+                amount = round(consumption * meter["tariff"], 2)
+            payment = {
+                "consumption": consumption,
+                "tariff": meter["tariff"],
+                "amount": amount,
+            }
+
+    conn.close()
+    return render(request, "meters/meter_detail.html", {
         "meter": meter,
         "history": history,
         "payment": payment,
-    }
-    return render(request, "meters/meter_detail.html", context)
+    })
