@@ -16,7 +16,7 @@
                     <h5>Счётчики</h5>
                     <p>Управление приборами учёта</p>
                 </div>
-                <div class="text-end fs-1 opacity-25">📊</div>
+                <div class="text-end fs-1 opacity-25">🎰</div>
             </div>
         </a>
     </div>
@@ -31,16 +31,28 @@
             </div>
         </a>
     </div>
+
     <div class="col-md-4">
-        <a href="/admin/" class="text-decoration-none">
-            <div class="dashboard-card bg-teal">
-                <div>
-                    <h5>Админ-панель</h5>
-                    <p>Служебные данные Django</p>
-                </div>
-                <div class="text-end fs-1 opacity-25">⚙️</div>
+    <a href="{% url 'payments:statistics' %}" class="text-decoration-none">
+        <div class="dashboard-card bg-green">
+            <div>
+                <h5>Статистика</h5>
+                <p>Показания по каждому счётчику</p>
             </div>
-        </a>
+            <div class="text-end fs-1 opacity-25">📈</div>
+        </div>
+    </a>
+    </div>
+    <div class="col-md-4">
+    <a href="/admin/" class="text-decoration-none">
+        <div class="dashboard-card bg-settings">
+            <div>
+                <h5>Админ-панель</h5>
+                <p>Служебные данные Django</p>
+            </div>
+            <div class="text-end fs-1 opacity-25">⚙️</div>
+        </div>
+    </a>
     </div>
 </div>
 {% endblock %}

@@ -94,9 +94,9 @@ def statistics(request):
     conn = get_connection()
     stats = conn.execute("""
         SELECT meters.name AS meter_name,
-               meters.unit AS unit,
-               COUNT(readings.id) AS readings_count,
-               MAX(readings.date) AS last_date
+                meters.unit AS unit,
+                COUNT(readings.id) AS readings_count,
+                MAX(readings.date) AS last_date
         FROM meters
         LEFT JOIN readings ON meters.id = readings.meter_id
         GROUP BY meters.id, meters.name, meters.unit
@@ -112,4 +112,31 @@ def statistics(request):
     return render(request, "payments/statistics.html", {
         "stats": stats,
         "totals": totals,
+    })
+
+
+def readings_by_period(request):
+    """Показания за период: параметризованный запрос по датам."""
+    start = request.GET.get("start")
+    end = request.GET.get("end")
+    rows = []
+    if start and end:
+        conn = get_connection()
+        rows = conn.execute("""
+            SELECT readings.id,
+                    readings.value,
+                    readings.date,
+                    readings.time,
+                    meters.name AS meter_name,
+                    meters.unit AS unit
+            FROM readings
+            JOIN meters ON readings.meter_id = meters.id
+            WHERE readings.date BETWEEN ? AND ?
+            ORDER BY readings.date, readings.time
+        """, (start, end)).fetchall()
+        conn.close()
+    return render(request, "payments/readings_by_period.html", {
+        "rows": rows,
+        "start": start,
+        "end": end,
     })

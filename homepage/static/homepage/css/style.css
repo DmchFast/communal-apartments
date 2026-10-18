@@ -183,6 +183,7 @@ footer.container {
 .dashboard-card.bg-green   { background: linear-gradient(135deg, #22c55e, #16a34a); }
 .dashboard-card.bg-red     { background: linear-gradient(135deg, #ef4444, #dc2626); }
 .dashboard-card.bg-blue    { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.dashboard-card.bg-settings { background: linear-gradient(135deg, #64748b, #475569); }
 
 .summary-card {
     border-left: 4px solid #3b82f6;

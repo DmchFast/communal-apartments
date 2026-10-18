@@ -5,7 +5,15 @@
 {% block content %}
 <div class="mb-4">
     <h1 class="fw-bold">Счётчики</h1>
-    <p class="text-muted">Управление приборами учёта · всего: {{ meters|length }}</p>
+    <div class="d-flex justify-content-between align-items-center gap-3">
+        <p class="text-muted mb-0">
+            Управление приборами учёта · всего: {{ meters|length }}
+        </p>
+        <a href="{% url 'payments:readings_by_period' %}" class="btn-action-blue">
+            Показания за период
+            <span aria-hidden="true">→</span>
+        </a>
+    </div>
 </div>
 
 {% if meters %}

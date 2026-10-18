@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Показания за период — Коммуналка{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="fw-bold">Показания за период</h1>
+    <p class="text-muted">Выберите диапазон дат и нажмите «Показать»</p>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-4">
+        <label for="start" class="form-label">Начало</label>
+        <input type="date" id="start" name="start"
+               value="{{ start|default:'' }}" class="form-control">
+    </div>
+    <div class="col-md-4">
+        <label for="end" class="form-label">Конец</label>
+        <input type="date" id="end" name="end"
+               value="{{ end|default:'' }}" class="form-control">
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">Показать</button>
+    </div>
+</form>
+
+{% if start and end %}
+    {% if rows %}
+    <div class="card">
+        <div class="card-body">
+            <ul class="list-group">
+                {% for r in rows %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        {{ r.date }} {{ r.time }} —
+                        <strong>{{ r.meter_name }}</strong>
+                        <span class="text-muted">({{ r.unit }})</span>
+                    </span>
+                    <span class="badge bg-primary">{{ r.value }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="fs-1 mb-3">📭</div>
+            <p class="text-muted mb-0">За выбранный период показаний нет.</p>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+{% endblock %}
