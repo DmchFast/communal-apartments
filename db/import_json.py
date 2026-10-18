@@ -17,13 +17,16 @@ def import_users_and_meters(conn):
     meters_data = load_json(METERS_FILE) or {}
     users = []
     meters = []
+    user_mapping = {}    # username -> new user_id
+    meter_mapping = {}   # (username, old_meter_id) -> new meter_id
     user_id = 0
     meter_id = 0
 
     for username, user_meters in meters_data.items():
         user_id += 1
         users.append((user_id, username))
-        for old_meter_id, meter_info in user_meters.items():
+        user_mapping[username] = user_id
+        for old_meter_id_str, meter_info in user_meters.items():
             meter_id += 1
             meters.append((
                 meter_id,
@@ -32,6 +35,7 @@ def import_users_and_meters(conn):
                 meter_info["unit"],
                 meter_info.get("tariff"),
             ))
+            meter_mapping[(username, int(old_meter_id_str))] = meter_id
 
     conn.executemany(
         "INSERT INTO users (id, name) VALUES (?, ?)",
@@ -44,17 +48,24 @@ def import_users_and_meters(conn):
     return meter_id
 
 
-def import_readings(conn):
+def import_readings(conn, user_mapping, meter_mapping):
     readings_data = load_json(READINGS_FILE) or {}
     readings = []
     reading_id = 0
 
     for username, user_readings in readings_data.items():
+        if username not in user_mapping:
+            continue
         for item in user_readings:
+            new_meter_id = meter_mapping.get(
+                (username, int(item["meter_id"]))
+            )
+            if new_meter_id is None:
+                continue
             reading_id += 1
             readings.append((
                 reading_id,
-                item["meter_id"],
+                new_meter_id,
                 item["value"],
                 item["date"],
                 item["time"],
