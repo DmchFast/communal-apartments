@@ -17,7 +17,7 @@
                 <div class="card-body d-flex flex-column">
                     <div class="d-flex align-items-start justify-content-between mb-3">
                     <h5 class="card-title mb-1">{{ item.meter.name }}</h5>
-                        {% if item.payment %}
+                        {% if item.meter.tariff %}
                             <span class="badge bg-success">Рассчитан</span>
                         {% else %}
                             <span class="badge bg-warning">Нет тарифа</span>
