@@ -87,3 +87,29 @@ def payment_detail(request, meter_id):
         "meter": meter,
         "payment": payment,
     })
+
+
+def statistics(request):
+    """Страница статистики: количество показаний по каждому счётчику."""
+    conn = get_connection()
+    stats = conn.execute("""
+        SELECT meters.name AS meter_name,
+               meters.unit AS unit,
+               COUNT(readings.id) AS readings_count,
+               MAX(readings.date) AS last_date
+        FROM meters
+        LEFT JOIN readings ON meters.id = readings.meter_id
+        GROUP BY meters.id, meters.name, meters.unit
+        ORDER BY readings_count DESC
+    """).fetchall()
+
+    totals = conn.execute("""
+        SELECT COUNT(*) AS total_readings
+        FROM readings
+    """).fetchone()
+
+    conn.close()
+    return render(request, "payments/statistics.html", {
+        "stats": stats,
+        "totals": totals,
+    })

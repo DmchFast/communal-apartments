@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика — Коммуналка{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="fw-bold">Статистика показаний</h1>
+    <p class="text-muted">
+        Всего показаний в базе:
+        <strong>{{ totals.total_readings }}</strong>
+    </p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if stats %}
+        <ul class="list-group">
+            {% for s in stats %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>{{ s.meter_name }}</strong>
+                    <span class="text-muted">({{ s.unit }})</span>
+                </span>
+                <span>
+                    <span class="badge bg-primary">{{ s.readings_count }} показаний</span>
+                    {% if s.last_date %}
+                        <span class="text-muted ms-2" style="font-size: 0.85rem;">
+                            последнее: {{ s.last_date }}
+                        </span>
+                    {% endif %}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-0">Данных пока нет.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
